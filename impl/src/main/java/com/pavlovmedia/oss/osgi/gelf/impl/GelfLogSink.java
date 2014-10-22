@@ -49,7 +49,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
 public class GelfLogSink implements LogListener {
     private final ObjectMapper  mapper       = new ObjectMapper();
 
-    @Property(boolValue=false, name="Active", description="Graylog2 Active")
+    @Property(boolValue=false, label="Active", description="Graylog2 Active")
     private final static String GRAYLOG_ACTIVE="graylog.active";
     
     @Property(label="Host", description="Graylog2 Target Host")
