@@ -79,8 +79,10 @@ public class GelfLogSink implements LogListener {
         port = (Integer) config.get(GRAYLOG_PORT);
         consoleMessages =  (Boolean) config.get(GRAYLOG_LOG_CONSOLE);
         
-        if (active && consoleMessages) {
-            System.out.println(String.format("Enabling GELF logging to %s:%d", hostname, port));
+        if (active) {
+            if (consoleMessages) {
+                System.out.println(String.format("Enabling GELF logging to %s:%d", hostname, port));    
+            }
             ensureConnection();
         }
     }
@@ -93,10 +95,8 @@ public class GelfLogSink implements LogListener {
                 transport.shutdownInput();
                 readerService.addLogListener(this);
             } catch (IOException e) {
-                if (consoleMessages) {
-                    System.err.println(String.format("Failed to connect to %s:%d => %s", hostname, port, e.getMessage()));
-                    e.printStackTrace();
-                }
+                System.err.println(String.format("Failed to connect to %s:%d => %s", hostname, port, e.getMessage()));
+                e.printStackTrace();
                 transport = null;
             }
         }
