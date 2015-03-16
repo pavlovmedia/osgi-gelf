@@ -32,11 +32,19 @@
     </license>
   </licenses>
 
+  <url>https://github.com/pavlovmedia/osgi-gelf</url>
+
+  <scm>
+    <url>https://github.com/pavlovmedia/osgi-gelf.git</url>
+    <connection>scm:git:https://github.com/pavlovmedia/osgi-gelf.git</connection>
+    <developerConnection>scm:git:https://github.com/pavlovmedia/osgi-gelf.git</developerConnection>
+  </scm>
+
   <distributionManagement>
     <repository>
       <id>bintray-shawn-pavlov-media-oss-osgi-gelf</id>
       <name>shawn-pavlov-media-oss-osgi-gelf</name>
-      <url>https://api.bintray.com/maven/shawn/pavlov-media-oss/osgi-gelf</url>
+      <url>https://api.bintray.com/maven/pavlovmedia/pavlov-media-oss/osgi-gelf</url>
     </repository>
   </distributionManagement>
 
