@@ -75,7 +75,7 @@ public class GelfMessageConverter {
         // html breaks for correct displays.
         if (null != entry.getException()) {
             try ( StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw, true); ) {
+                  PrintWriter pw = new PrintWriter(sw, true); ) {
                 entry.getException().printStackTrace(pw);
                 message.full_message = sw.toString();    
             } catch (IOException e1) {
