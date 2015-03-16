@@ -15,10 +15,12 @@
  */
 package com.pavlovmedia.oss.osgi.gelf.impl;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Dictionary;
 
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogService;
@@ -68,15 +70,29 @@ public class GelfMessageConverter {
         message.timestamp = entry.getTime();
         message.level = gelfLevelFromOsgiLevel(entry.getLevel());
         
+        // If we have an exception, we just replace full_message
+        // Graylog will reformat it to replace newlines with 
+        // html breaks for correct displays.
         if (null != entry.getException()) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintWriter writer = new PrintWriter(baos);
-            entry.getException().printStackTrace(writer);
-            message.additionalFields.put("exception", baos.toString());
+            try ( StringWriter sw = new StringWriter();
+                  PrintWriter pw = new PrintWriter(sw, true); ) {
+                entry.getException().printStackTrace(pw);
+                message.full_message = sw.toString();    
+            } catch (IOException e1) {
+                // These will come close,so there really
+                // isn't anything to do with them.
+            }
         }
         
-        message.additionalFields.put("BundleId", ""+entry.getBundle().getBundleId());
-        message.additionalFields.put("BundleSymbolicName", entry.getBundle().getSymbolicName());
+        message.additionalFields.put("Bundle-Id", ""+entry.getBundle().getBundleId());
+        message.additionalFields.put("Bundle-SymbolicName", entry.getBundle().getSymbolicName());
+        
+        @SuppressWarnings("rawtypes")
+        Dictionary d = entry.getBundle().getHeaders();
+        
+        message.additionalFields.put("Bundle-Version", d.get("Bundle-Version").toString());
+        message.additionalFields.put("Bundle-Name", d.get("Bundle-Name").toString());
+        
         return message;
     }
     
