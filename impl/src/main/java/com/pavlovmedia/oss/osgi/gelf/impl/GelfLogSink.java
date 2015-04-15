@@ -16,6 +16,7 @@
 package com.pavlovmedia.oss.osgi.gelf.impl;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Map;
@@ -66,22 +67,39 @@ public class GelfLogSink implements LogListener {
     private int port;
     private boolean consoleMessages;
     
-    private Socket transport;
+    private Socket transport = null;
+    private OutputStream outputStream = null;
 
     @Reference
     LogReaderService readerService;
     
     @Activate
     protected void activate(Map<String, Object> config) {
-        
-        active = (Boolean) config.get(GRAYLOG_ACTIVE);
-        hostname = config.get(GRAYLOG_HOST).toString();
-        port = (Integer) config.get(GRAYLOG_PORT);
         consoleMessages =  (Boolean) config.get(GRAYLOG_LOG_CONSOLE);
         
-        if (active && consoleMessages) {
-            System.out.println(String.format("Enabling GELF logging to %s:%d", hostname, port));
+        // Check to see if we have a host, if not the rest doesn't matter
+        if (!config.containsKey(GRAYLOG_HOST) || null == config.get(GRAYLOG_HOST)) {
+            String message = "Cannot start gelf bundle, a host is not configured.";
+            if (consoleMessages) {
+                System.err.println(message);
+            }
+            active = false;
+            return;
+        } else {
+            hostname = config.get(GRAYLOG_HOST).toString();    
+        }
+            
+        active = (Boolean) config.get(GRAYLOG_ACTIVE);
+        port = (Integer) config.get(GRAYLOG_PORT);
+        
+        
+        if (active) {
+            if (consoleMessages) {
+                String message = String.format("Enabling GELF logging to %s:%d", hostname, port);
+                System.out.println(message);    
+            }
             ensureConnection();
+            readerService.addLogListener(this);
         }
     }
 
@@ -90,14 +108,17 @@ public class GelfLogSink implements LogListener {
             try {
                 InetAddress address = InetAddress.getByName(hostname); 
                 transport = new Socket(address, port);
+                transport.setSoTimeout(500);
                 transport.shutdownInput();
-                readerService.addLogListener(this);
+                outputStream = transport.getOutputStream();
             } catch (IOException e) {
+                String message = String.format("Failed to connect to %s:%d => %s", hostname, port, e.getMessage());
                 if (consoleMessages) {
-                    System.err.println(String.format("Failed to connect to %s:%d => %s", hostname, port, e.getMessage()));
+                    System.err.println(message);
                     e.printStackTrace();
                 }
                 transport = null;
+                outputStream = null;
             }
         }
     }
@@ -105,48 +126,57 @@ public class GelfLogSink implements LogListener {
     @Deactivate
     protected void deactivate() {
         if (null != transport) {
+            String message = "Shutting down GELF logging";
             if (consoleMessages) {
-                System.out.println("Shutting down GELF logging");
+                System.out.println(message);
             }
             try {
                 readerService.removeLogListener(this);
                 transport.close();
             } catch (IOException e) { /* Do nothing */ }
             transport = null;
+            outputStream = null;
         }
     }
 
     public void logged(LogEntry entry) {
         if (!active) {
+            System.out.println("Logging disabed");
             return; // We aren't running
         }
         
         ensureConnection();
         
         if (null == transport) {
+            System.out.println("Transport not up");
             return; // Not getting connected/reconnected
         }
         
         GelfMessage message = GelfMessageConverter.fromOsgiMessage(entry);
         try {
+            System.out.println("Sending log message :"+mapper.writeValueAsString(message));
             byte[] messageBytes = mapper.writeValueAsBytes(message);
-            transport.getOutputStream().write(messageBytes);
+            outputStream.write(messageBytes);
             // There is a bug in GELF that requires us to end with a null byte
-            transport.getOutputStream().write(new byte[] { '\0' });
+            outputStream.write(new byte[] { '\0' });
         } catch (JsonProcessingException e) {
+            String emessage = "Failed serializing a GelfMessage " + e.getMessage();
             if (consoleMessages) {
-                System.err.println("Failed serializing a GelfMessage " + e.getMessage());
+                System.err.println(emessage);
                 e.printStackTrace();
             }
         } catch (IOException e) {
+            String emessage = "Failed serializing a GelfMessage " + e.getMessage();
             if (consoleMessages) {
-                System.err.println("Failed writing GelfMessage " + e.getMessage());
+                System.err.println(emessage);
                 e.printStackTrace();
             }
+            
             try {
                 transport.close();
             } catch (IOException e1) { /* Do nothing */ }
             transport = null;
+            outputStream = null;
         }
     }
 }
