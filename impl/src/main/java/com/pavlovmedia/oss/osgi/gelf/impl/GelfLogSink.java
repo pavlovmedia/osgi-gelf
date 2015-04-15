@@ -30,7 +30,6 @@ import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
-import org.osgi.service.log.LogService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,9 +73,6 @@ public class GelfLogSink implements LogListener {
     @Reference
     LogReaderService readerService;
     
-    @Reference
-    LogService logger;
-    
     @Activate
     protected void activate(Map<String, Object> config) {
         consoleMessages =  (Boolean) config.get(GRAYLOG_LOG_CONSOLE);
@@ -84,7 +80,6 @@ public class GelfLogSink implements LogListener {
         // Check to see if we have a host, if not the rest doesn't matter
         if (!config.containsKey(GRAYLOG_HOST) || null == config.get(GRAYLOG_HOST)) {
             String message = "Cannot start gelf bundle, a host is not configured.";
-            logger.log(LogService.LOG_INFO, message);
             if (consoleMessages) {
                 System.err.println(message);
             }
@@ -101,10 +96,10 @@ public class GelfLogSink implements LogListener {
         if (active) {
             if (consoleMessages) {
                 String message = String.format("Enabling GELF logging to %s:%d", hostname, port);
-                logger.log(LogService.LOG_INFO, message);
                 System.out.println(message);    
             }
             ensureConnection();
+            readerService.addLogListener(this);
         }
     }
 
@@ -113,19 +108,17 @@ public class GelfLogSink implements LogListener {
             try {
                 InetAddress address = InetAddress.getByName(hostname); 
                 transport = new Socket(address, port);
+                transport.setSoTimeout(500);
                 transport.shutdownInput();
-		outputStream = transport.getOutputStream();
-                System.out.println("Connecting to the log service "+readerService);
-                readerService.addLogListener(this);
+                outputStream = transport.getOutputStream();
             } catch (IOException e) {
                 String message = String.format("Failed to connect to %s:%d => %s", hostname, port, e.getMessage());
-                logger.log(LogService.LOG_ERROR, message, e);
                 if (consoleMessages) {
                     System.err.println(message);
                     e.printStackTrace();
                 }
                 transport = null;
-		outputStream = null;
+                outputStream = null;
             }
         }
     }
@@ -134,7 +127,6 @@ public class GelfLogSink implements LogListener {
     protected void deactivate() {
         if (null != transport) {
             String message = "Shutting down GELF logging";
-            logger.log(LogService.LOG_INFO, message);
             if (consoleMessages) {
                 System.out.println(message);
             }
@@ -143,7 +135,7 @@ public class GelfLogSink implements LogListener {
                 transport.close();
             } catch (IOException e) { /* Do nothing */ }
             transport = null;
-	    outputStream = null;
+            outputStream = null;
         }
     }
 
@@ -169,14 +161,12 @@ public class GelfLogSink implements LogListener {
             outputStream.write(new byte[] { '\0' });
         } catch (JsonProcessingException e) {
             String emessage = "Failed serializing a GelfMessage " + e.getMessage();
-            logger.log(LogService.LOG_ERROR, emessage, e);
             if (consoleMessages) {
                 System.err.println(emessage);
                 e.printStackTrace();
             }
         } catch (IOException e) {
             String emessage = "Failed serializing a GelfMessage " + e.getMessage();
-            logger.log(LogService.LOG_ERROR, emessage, e);
             if (consoleMessages) {
                 System.err.println(emessage);
                 e.printStackTrace();
@@ -186,7 +176,7 @@ public class GelfLogSink implements LogListener {
                 transport.close();
             } catch (IOException e1) { /* Do nothing */ }
             transport = null;
-	    outputStream = null;
+            outputStream = null;
         }
     }
 }
