@@ -126,6 +126,12 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
             // There is a bug in GELF that requires us to end with a null byte
             outputStream.write(new byte[] { '\0' });
         } catch (IOException e) {
+            // Be sure to drop the connection so we get reconnected
+            try { transport.close(); } catch (IOException e1) { /* Do nothing */ }
+            
+            transport = null;
+            outputStream = null;
+            
             if (null != onException) {
                 onException.accept(e);
             }
@@ -134,7 +140,10 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
 
     @Override
     public void logGelfMessage(GelfMessage message) {
-        logGelfMessage(message, (e) -> { System.err.println("Failed to serialize message: "+e.getMessage()); });
+        logGelfMessage(message, (e) -> { 
+            System.err.println("Failed to serialize message: "+message+" "+e.getMessage()); 
+            e.printStackTrace();
+            });
     }
 
 }
