@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.log.LogEntry;
@@ -40,13 +39,9 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  * @author Shawn Dempsay
  *
  */
-@Component()
+@Component
 @Service(value = LogListener.class)
 public class GelfLogSink implements LogListener {
-    @Property(boolValue=false, label="Active", description="Graylog2 Active")
-    final static String GRAYLOG_ACTIVE="graylog.active";
-    
-    private boolean active;
     
     @Reference
     LogReaderService readerService;
@@ -56,25 +51,15 @@ public class GelfLogSink implements LogListener {
     
     @Activate
     protected void activate(Map<String, Object> config) {
-        active = (Boolean) config.get(GRAYLOG_ACTIVE);
-        if (active) {
-            readerService.addLogListener(this);
-        }
+        readerService.addLogListener(this);
     }
     
     @Deactivate
     protected void deactivate() {
-        if (active) {
-            readerService.removeLogListener(this);
-        }
+        readerService.removeLogListener(this);
     }
 
     public void logged(LogEntry entry) {
-        if (!active) {
-            System.out.println("Logging disabed");
-            return; // We aren't running
-        }
-        
         GelfMessage message = GelfMessageConverter.fromOsgiMessage(entry);
         gelfServer.logGelfMessage(message);
     }
