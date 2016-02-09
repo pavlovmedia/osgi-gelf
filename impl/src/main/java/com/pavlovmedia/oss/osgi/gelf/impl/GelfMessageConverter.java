@@ -21,6 +21,8 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Dictionary;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogService;
@@ -35,7 +37,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
  *
  */
 public class GelfMessageConverter {
-    
+    private static int MAX_LEVEL = 3;
     private static String _hostname = null;
     
     /**
@@ -62,13 +64,17 @@ public class GelfMessageConverter {
      * @param entry The OSGi LogEntry
      * @return A GelfMessage object that represents the same data
      */
-    public static GelfMessage fromOsgiMessage(LogEntry entry) {
+    public static Optional<GelfMessage> fromOsgiMessage(LogEntry entry, AtomicBoolean traceOn) {
         GelfMessage message = new GelfMessage();
         message.host = getHostname();
         message.short_message = entry.getMessage();
         message.full_message = entry.getMessage();
         message.timestamp = entry.getTime();
-        message.level = gelfLevelFromOsgiLevel(entry.getLevel());
+        message.level = gelfLevelFromOsgiLevel(entry.getLevel(), traceOn);
+        
+        if (message.level > MAX_LEVEL) {
+            return Optional.empty();
+        }
         
         // If we have an exception, we just replace full_message
         // Graylog will reformat it to replace newlines with 
@@ -93,7 +99,7 @@ public class GelfMessageConverter {
         message.additionalFields.put("Bundle-Version", d.get("Bundle-Version").toString());
         message.additionalFields.put("Bundle-Name", d.get("Bundle-Name").toString());
         
-        return message;
+        return Optional.of(message);
     }
     
     /**
@@ -101,7 +107,7 @@ public class GelfMessageConverter {
      * @param osgiLevel an OSGi LegService level
      * @return The matching GELF log level
      */
-    public static int gelfLevelFromOsgiLevel(int osgiLevel) {
+    public static int gelfLevelFromOsgiLevel(int osgiLevel, AtomicBoolean traceOn) {
         switch (osgiLevel) {
         case LogService.LOG_DEBUG:
             return 0;
@@ -109,8 +115,14 @@ public class GelfMessageConverter {
             return 1;
         case LogService.LOG_WARNING:
             return 2;
+        case LogService.LOG_ERROR:
+            return 3;
         default:
-            return 3; // Error for anything we don't understand
+            if (traceOn.get()) {
+                // If trace is on, we return back this message as debug
+                return 0;
+            }
+            return MAX_LEVEL + 1; // This number is greater than MAX_LEVEL so will be ignored
         }
     }
 }

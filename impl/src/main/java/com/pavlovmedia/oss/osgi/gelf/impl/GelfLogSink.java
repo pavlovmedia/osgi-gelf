@@ -16,10 +16,15 @@
 package com.pavlovmedia.oss.osgi.gelf.impl;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
+import org.apache.felix.scr.annotations.Properties;
+import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.log.LogEntry;
@@ -41,7 +46,11 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  */
 @Component
 @Service(value = LogListener.class)
+@Properties({
+    @Property(name=GelfLogSink.TRACE_ENABLE, boolValue=false, label="Trace Enable", description="Log messages with unknown levels as debug")
+})
 public class GelfLogSink implements LogListener {
+    final static String TRACE_ENABLE = "graylog.trace.enable";
     
     @Reference
     LogReaderService readerService;
@@ -49,18 +58,26 @@ public class GelfLogSink implements LogListener {
     @Reference
     IGelfTransporter gelfServer;
     
+    private AtomicBoolean traceOn = new AtomicBoolean(false);
+    
     @Activate
     protected void activate(Map<String, Object> config) {
+        traceOn.set((Boolean) config.get(TRACE_ENABLE));
         readerService.addLogListener(this);
     }
     
+    @Modified
+    protected void modified(Map<String,Object> config) {
+        traceOn.set((Boolean) config.get(TRACE_ENABLE));
+    }
+ 
     @Deactivate
     protected void deactivate() {
         readerService.removeLogListener(this);
     }
 
     public void logged(LogEntry entry) {
-        GelfMessage message = GelfMessageConverter.fromOsgiMessage(entry);
-        gelfServer.logGelfMessage(message);
+        Optional<GelfMessage> message = GelfMessageConverter.fromOsgiMessage(entry, traceOn);
+        message.ifPresent(gelfServer::logGelfMessage);
     }
 }
