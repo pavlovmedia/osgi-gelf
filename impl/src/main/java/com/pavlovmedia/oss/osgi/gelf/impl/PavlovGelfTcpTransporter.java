@@ -21,6 +21,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
 import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
 
+/**
+ * This is the underlying transport for GELF messages. It can be used on its own with the
+ * log sink disabled, or used as the configuration to the log sink itself.
+ * 
+ * @author Shawn Dempsay {@literal <sdempsay@pavlovmedia.com>}
+ *
+ */
 @Component(metatype=true)
 @Service(value=IGelfTransporter.class)
 @Properties({
@@ -30,10 +37,10 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_LOG_CONSOLE, boolValue=false, label="Console Messages", description="Log messages to the console"),
 })
 public class PavlovGelfTcpTransporter implements IGelfTransporter {
-    final static String GRAYLOG_ACTIVE="graylog.active";
-    final static String GRAYLOG_HOST="graylog.host";
-    final static String GRAYLOG_PORT="graylog.port";
-    final static String GRAYLOG_LOG_CONSOLE = "graylog.console";
+    static final String GRAYLOG_ACTIVE="graylog.active";
+    static final String GRAYLOG_HOST="graylog.host";
+    static final String GRAYLOG_PORT="graylog.port";
+    static final String GRAYLOG_LOG_CONSOLE = "graylog.console";
     
     private final ObjectMapper mapper = new ObjectMapper();
     
@@ -47,7 +54,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     private Optional<OutputStream> outputStream = Optional.empty();
     
     @Override
-    public void logGelfMessage(GelfMessage message) {
+    public void logGelfMessage(final GelfMessage message) {
         logGelfMessage(message, (e) -> { 
             System.err.println("Failed to serialize message: "+message+" "+e.getMessage()); 
             e.printStackTrace();
@@ -55,7 +62,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     }
     
     @Override
-    public void logGelfMessage(GelfMessage message, Consumer<IOException> onException) {
+    public void logGelfMessage(final GelfMessage message, final Consumer<IOException> onException) {
         if (!active.get()) {
             return; // We aren't running
         }
@@ -72,10 +79,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
                         os.write(new byte[] { '\0' });
                     } catch (IOException e) {
                         // Be sure to drop the connection so we get reconnected
-                        try { transport.get().close(); } catch (IOException e1) { /* Do nothing */ }
-                        
-                        transport = Optional.empty();
-                        outputStream = Optional.empty();
+                        disconnect();
                         
                         if (null != onException) {
                             onException.accept(e);
@@ -87,12 +91,12 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     }
     
     @Activate
-    protected void activate(Map<String, Object> config) {
+    protected void activate(final Map<String, Object> config) {
         osgiSetup(config);
     }
     
     @Modified
-    protected void modified(Map<String, Object> config) {
+    protected void modified(final Map<String, Object> config) {
         osgiSetup(config);
     }
     
@@ -106,7 +110,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
      * 
      * @param config the map from activate or modified
      */
-    private void osgiSetup(Map<String, Object> config) {
+    private void osgiSetup(final Map<String, Object> config) {
         consoleMessages.set((Boolean) config.get(GRAYLOG_LOG_CONSOLE));
         
         // Check to see if we have a host, if not the rest doesn't matter
@@ -186,7 +190,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
      * @param format String format, like String.format
      * @param args Argument list, like String.format
      */
-    private void trace(String format, Object...args) {
+    private void trace(final String format, final Object...args) {
         if (consoleMessages.get()) {
             System.out.println(String.format(format, args));
         }

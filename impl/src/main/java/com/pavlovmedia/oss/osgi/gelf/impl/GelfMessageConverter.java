@@ -36,9 +36,11 @@ import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
  * @author Shawn Dempsay
  *
  */
-public class GelfMessageConverter {
+public final class GelfMessageConverter {
     private static int MAX_LEVEL = 3;
     private static String _hostname = null;
+    
+    private GelfMessageConverter() { }
     
     /**
      * This method will determine the hostname and then cache it
@@ -64,7 +66,7 @@ public class GelfMessageConverter {
      * @param entry The OSGi LogEntry
      * @return A GelfMessage object that represents the same data
      */
-    public static Optional<GelfMessage> fromOsgiMessage(LogEntry entry, AtomicBoolean traceOn) {
+    public static Optional<GelfMessage> fromOsgiMessage(final LogEntry entry, final AtomicBoolean traceOn) {
         GelfMessage message = new GelfMessage();
         message.host = getHostname();
         message.short_message = entry.getMessage();
@@ -80,8 +82,8 @@ public class GelfMessageConverter {
         // Graylog will reformat it to replace newlines with 
         // html breaks for correct displays.
         if (null != entry.getException()) {
-            try ( StringWriter sw = new StringWriter();
-                  PrintWriter pw = new PrintWriter(sw, true); ) {
+            try (StringWriter sw = new StringWriter();
+                  PrintWriter pw = new PrintWriter(sw, true);) {
                 entry.getException().printStackTrace(pw);
                 message.full_message = sw.toString();    
             } catch (IOException e1) {
@@ -107,7 +109,7 @@ public class GelfMessageConverter {
      * @param osgiLevel an OSGi LegService level
      * @return The matching GELF log level
      */
-    public static int gelfLevelFromOsgiLevel(int osgiLevel, AtomicBoolean traceOn) {
+    public static int gelfLevelFromOsgiLevel(final int osgiLevel, final AtomicBoolean traceOn) {
         switch (osgiLevel) {
         case LogService.LOG_DEBUG:
             return 0;

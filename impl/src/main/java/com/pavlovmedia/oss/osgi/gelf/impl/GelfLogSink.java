@@ -44,13 +44,13 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  * @author Shawn Dempsay
  *
  */
-@Component
+@Component(metatype=true)
 @Service(value = LogListener.class)
 @Properties({
     @Property(name=GelfLogSink.TRACE_ENABLE, boolValue=false, label="Trace Enable", description="Log messages with unknown levels as debug")
 })
 public class GelfLogSink implements LogListener {
-    final static String TRACE_ENABLE = "graylog.trace.enable";
+    static final String TRACE_ENABLE = "graylog.trace.enable";
     
     @Reference
     LogReaderService readerService;
@@ -61,13 +61,13 @@ public class GelfLogSink implements LogListener {
     private AtomicBoolean traceOn = new AtomicBoolean(false);
     
     @Activate
-    protected void activate(Map<String, Object> config) {
+    protected void activate(final Map<String, Object> config) {
         traceOn.set((Boolean) config.get(TRACE_ENABLE));
         readerService.addLogListener(this);
     }
     
     @Modified
-    protected void modified(Map<String,Object> config) {
+    protected void modified(final Map<String,Object> config) {
         traceOn.set((Boolean) config.get(TRACE_ENABLE));
     }
  
@@ -76,7 +76,7 @@ public class GelfLogSink implements LogListener {
         readerService.removeLogListener(this);
     }
 
-    public void logged(LogEntry entry) {
+    public void logged(final LogEntry entry) {
         Optional<GelfMessage> message = GelfMessageConverter.fromOsgiMessage(entry, traceOn);
         message.ifPresent(gelfServer::logGelfMessage);
     }
