@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Properties;
@@ -44,7 +45,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  * @author Shawn Dempsay
  *
  */
-@Component(metatype=true)
+@Component(metatype=true, policy=ConfigurationPolicy.REQUIRE, immediate=true)
 @Service(value = LogListener.class)
 @Properties({
     @Property(name=GelfLogSink.TRACE_ENABLE, boolValue=false, label="Trace Enable", description="Log messages with unknown levels as debug")
