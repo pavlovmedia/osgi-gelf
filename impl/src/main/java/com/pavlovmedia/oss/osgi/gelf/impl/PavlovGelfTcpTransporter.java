@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Properties;
@@ -28,7 +29,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  * @author Shawn Dempsay {@literal <sdempsay@pavlovmedia.com>}
  *
  */
-@Component(metatype=true)
+@Component(metatype=true, policy=ConfigurationPolicy.REQUIRE)
 @Service(value=IGelfTransporter.class)
 @Properties({
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_ACTIVE, boolValue=false, label="Active", description="Graylog2 Active"),
