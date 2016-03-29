@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
@@ -16,6 +19,7 @@ import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.PropertyUnbounded;
 import org.apache.felix.scr.annotations.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,12 +40,14 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_HOST, label="Host", description="Graylog2 Target Host"),
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_PORT, intValue=12201, label="Port", description="Graylog2 Port"),
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_LOG_CONSOLE, boolValue=false, label="Console Messages", description="Log messages to the console"),
+    @Property(name=PavlovGelfTcpTransporter.GRAYLOG_ADD_FIELDS, value="", unbounded = PropertyUnbounded.VECTOR, label = "Additional Fields", description = "Additional fields to add to the record in key:value pairs")
 })
 public class PavlovGelfTcpTransporter implements IGelfTransporter {
     static final String GRAYLOG_ACTIVE="graylog.active";
     static final String GRAYLOG_HOST="graylog.host";
     static final String GRAYLOG_PORT="graylog.port";
     static final String GRAYLOG_LOG_CONSOLE = "graylog.console";
+    static final String GRAYLOG_ADD_FIELDS="graylog.additional.fields";
     
     private final ObjectMapper mapper = new ObjectMapper();
     
@@ -53,6 +59,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     private final Object socketLock = new Object();
     private Optional<Socket> transport = Optional.empty();
     private Optional<OutputStream> outputStream = Optional.empty();
+    private Map<String,String> additionalFields = Collections.emptyMap();
     
     @Override
     public void logGelfMessage(final GelfMessage message) {
@@ -66,6 +73,10 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     public void logGelfMessage(final GelfMessage message, final Consumer<IOException> onException) {
         if (!active.get()) {
             return; // We aren't running
+        }
+        
+        if (!additionalFields.isEmpty()) {
+            message.additionalFields.putAll(additionalFields);
         }
         
         synchronized (socketLock) {
@@ -113,6 +124,18 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
      */
     private void osgiSetup(final Map<String, Object> config) {
         consoleMessages.set((Boolean) config.get(GRAYLOG_LOG_CONSOLE));
+        
+        // See if we have additional fields to pass along
+        @SuppressWarnings("unchecked")
+        Vector<String> additionalVector = (Vector<String>) config.get(GRAYLOG_ADD_FIELDS);
+        if (null != additionalVector && !additionalVector.isEmpty()) {
+            additionalFields = additionalVector.stream()
+               .map(e -> e.split(":"))
+               .filter(a -> a.length == 2)
+               .collect(Collectors.toMap(a -> a[0].trim(), a -> a[1].trim()));
+        } else {
+            additionalFields = Collections.emptyMap();
+        }
         
         // Check to see if we have a host, if not the rest doesn't matter
         if (!config.containsKey(GRAYLOG_HOST) || null == config.get(GRAYLOG_HOST)) {
