@@ -121,7 +121,9 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
             disconnect();
         } else {
             String newHostname = config.get(GRAYLOG_HOST).toString();
-            Integer newPort = (Integer) config.get(GRAYLOG_PORT);
+            // There is an odd issue where the configration system either puts in
+            // decimals, or a string and a straight cast fails
+            Integer newPort = Integer.parseInt(config.get(GRAYLOG_PORT).toString().split("\\.")[0]);
             
             /**
              * If either of these changed, we need to close the current
