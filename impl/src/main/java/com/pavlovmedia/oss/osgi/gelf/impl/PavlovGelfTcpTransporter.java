@@ -33,7 +33,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  * @author Shawn Dempsay {@literal <sdempsay@pavlovmedia.com>}
  *
  */
-@Component(metatype=true, policy=ConfigurationPolicy.REQUIRE)
+@Component(metatype=true, policy=ConfigurationPolicy.REQUIRE, immediate=true)
 @Service(value=IGelfTransporter.class)
 @Properties({
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_ACTIVE, boolValue=false, label="Active", description="Graylog2 Active"),

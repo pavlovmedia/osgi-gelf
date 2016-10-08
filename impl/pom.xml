@@ -73,9 +73,6 @@
             <Import-Package>
               *
             </Import-Package>
-            <Service-Component>
-              OSGI-INF/*
-            </Service-Component>
           </instructions>
         </configuration>
       </plugin>
