@@ -5,9 +5,9 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ import org.apache.felix.scr.annotations.PropertyUnbounded;
 import org.apache.felix.scr.annotations.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pavlovmedia.oss.osgi.gelf.impl.external.IronValueHelper;
 import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
 import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
 
@@ -123,30 +124,27 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
      * @param config the map from activate or modified
      */
     private void osgiSetup(final Map<String, Object> config) {
-        consoleMessages.set((Boolean) config.get(GRAYLOG_LOG_CONSOLE));
+        IronValueHelper helper = new IronValueHelper(config);
+        
+        consoleMessages.set(helper.getBoolean(GRAYLOG_LOG_CONSOLE).orElse(false));
         
         // See if we have additional fields to pass along
-        @SuppressWarnings("unchecked")
-        Vector<String> additionalVector = (Vector<String>) config.get(GRAYLOG_ADD_FIELDS);
-        if (null != additionalVector && !additionalVector.isEmpty()) {
-            additionalFields = additionalVector.stream()
-               .map(e -> e.split(":"))
-               .filter(a -> a.length == 2)
-               .collect(Collectors.toMap(a -> a[0].trim(), a -> a[1].trim()));
-        } else {
-            additionalFields = Collections.emptyMap();
-        }
+        List<String> graylogFields = helper.getStringList(GRAYLOG_ADD_FIELDS);
+        additionalFields = graylogFields.stream()
+                .map(e -> e.split(":"))
+                .filter(a -> a.length == 2)
+                .collect(Collectors.toMap(a -> a[0].trim(), a -> a[1].trim()));
         
         // Check to see if we have a host, if not the rest doesn't matter
-        if (!config.containsKey(GRAYLOG_HOST) || null == config.get(GRAYLOG_HOST)) {
+        Optional<String> glHost = helper.getString(GRAYLOG_HOST);
+        
+        if (!glHost.isPresent()) {
             trace("Cannot start gelf bundle, a host is not configured.");
             active.set(false);
             disconnect();
         } else {
-            String newHostname = config.get(GRAYLOG_HOST).toString();
-            // There is an odd issue where the configration system either puts in
-            // decimals, or a string and a straight cast fails
-            Integer newPort = Integer.parseInt(config.get(GRAYLOG_PORT).toString().split("\\.")[0]);
+            String newHostname = glHost.get();
+            Integer newPort = helper.getInteger(GRAYLOG_PORT).orElse(12201);
             
             /**
              * If either of these changed, we need to close the current
@@ -158,7 +156,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
                 disconnect();
             }
             
-            active.set((Boolean) config.get(GRAYLOG_ACTIVE));
+            active.set(helper.getBoolean(GRAYLOG_ACTIVE).orElse(false));
             
             if (active.get()) {
                 trace("Enabling GELF logging to %s:%d", hostname, port);

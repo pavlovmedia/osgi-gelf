@@ -32,6 +32,7 @@ import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
 
+import com.pavlovmedia.oss.osgi.gelf.impl.external.IronValueHelper;
 import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
 import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
 
@@ -63,13 +64,13 @@ public class GelfLogSink implements LogListener {
     
     @Activate
     protected void activate(final Map<String, Object> config) {
-        traceOn.set((Boolean) config.get(TRACE_ENABLE));
+        traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
         readerService.addLogListener(this);
     }
     
     @Modified
     protected void modified(final Map<String,Object> config) {
-        traceOn.set((Boolean) config.get(TRACE_ENABLE));
+        traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
     }
  
     @Deactivate
