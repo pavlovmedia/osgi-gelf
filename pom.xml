@@ -57,6 +57,7 @@
     <config-admin.version>1.8.8</config-admin.version>
     <osgi-log.version>1.0.1</osgi-log.version>
     <jackson.version>2.3.1</jackson.version>
+    <pluginversions.javadoc>2.9.1</pluginversions.javadoc>
   </properties>
 
   <modules>
@@ -112,6 +113,14 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${pluginversions.javadoc}</version>
+        <configuration>
+          <additionalparam>-Xdoclint:none</additionalparam>
+        </configuration>
       </plugin>
     </plugins>
   </build>
