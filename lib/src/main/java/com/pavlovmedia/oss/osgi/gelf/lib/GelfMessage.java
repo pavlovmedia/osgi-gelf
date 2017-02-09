@@ -30,7 +30,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public class GelfMessage {
 	public final String version = "1.1";
 	public String host;
+	@SuppressWarnings("checkstyle:membername")
 	public String short_message;
+	@SuppressWarnings("checkstyle:membername")
 	public String full_message;
 	
 	/** Milliseconds since UNIX epoch */

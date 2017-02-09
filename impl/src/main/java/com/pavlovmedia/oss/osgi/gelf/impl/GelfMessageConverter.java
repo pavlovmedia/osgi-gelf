@@ -38,7 +38,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
  */
 public final class GelfMessageConverter {
     private static int MAX_LEVEL = 3;
-    private static String _hostname = null;
+    private static String _HOSTNAME;
     
     private GelfMessageConverter() { }
     
@@ -48,15 +48,15 @@ public final class GelfMessageConverter {
      * @return the hostname of the system
      */
     public static String getHostname() {
-        if (null == _hostname) {
+        if (null == _HOSTNAME) {
             try {
-                _hostname = InetAddress.getLocalHost().getCanonicalHostName();
+                _HOSTNAME = InetAddress.getLocalHost().getCanonicalHostName();
             } catch (UnknownHostException e) {
                 System.err.println("Failed to find hostname "+e.getMessage());
-                _hostname = "Unknown";
+                _HOSTNAME = "Unknown";
             }
         }
-        return _hostname;
+        return _HOSTNAME;
     }
     
     /**
