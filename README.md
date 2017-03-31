@@ -1,3 +1,5 @@
+[![Build Status](http://ci-01.pavlovmedia.net/buildStatus/icon?job=github/pavlovmedia/osgi-gelf/master)](http://ci-01.pavlovmedia.net/job/github/job/pavlovmedia/job/osgi-gelf/job/master/)
+
 OSGi GELF 
 =
 
