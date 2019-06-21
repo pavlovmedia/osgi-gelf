@@ -33,8 +33,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class GelfMessageSerializer extends JsonSerializer<GelfMessage> {
 
 	@Override
-	public void serialize(GelfMessage value, JsonGenerator jgen,
-			SerializerProvider provider) throws IOException,
+	public void serialize(final GelfMessage value, final JsonGenerator jgen,
+			final SerializerProvider provider) throws IOException,
 			JsonProcessingException {
 		jgen.writeStartObject();
 		jgen.writeStringField("version", value.version);
@@ -46,7 +46,7 @@ public class GelfMessageSerializer extends JsonSerializer<GelfMessage> {
 		bd = bd.divide(new BigDecimal(1000), BigDecimal.ROUND_DOWN);
 		jgen.writeNumberField("timestamp", bd);
 		jgen.writeNumberField("level", value.level);
-		for(String key : value.additionalFields.keySet()) {
+		for (String key : value.additionalFields.keySet()) {
 			jgen.writeStringField("_"+key, value.additionalFields.get(key));
 		}
 		jgen.writeEndObject();

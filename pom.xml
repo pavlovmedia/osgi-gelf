@@ -51,7 +51,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven-bundle-plugin.version>3.0.1</maven-bundle-plugin.version>
-    <maven-scr-plugin.version>1.21.0</maven-scr-plugin.version>
+    <maven-scr-plugin.version>1.26.0</maven-scr-plugin.version>
     <pluginversions.javaver>1.8</pluginversions.javaver>
     <scr.version>1.9.12</scr.version>
     <config-admin.version>1.8.8</config-admin.version>
