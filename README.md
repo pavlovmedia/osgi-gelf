@@ -8,7 +8,7 @@ Builds
 | Branch | Status | OBR |
 |--------|--------|-----|
 | Master | [![Build Status](https://travis-ci.org/pavlovmedia/osgi-gelf.svg?branch=master)](https://travis-ci.org/pavlovmedia/osgi-gelf) | |
-| 1.0 | [![Build Status](https://travis-ci.org/pavlovmedia/osgi-gelf.svg?branch=2.0-release)](https://travis-ci.org/pavlovmedia/osgi-gelf) | [repository.xml](https://raw.githubusercontent.com/pavlovmedia/osgi-gelf1.0-release/obr/repository.xml) |
+| 2.0 | [![Build Status](https://travis-ci.org/pavlovmedia/osgi-gelf.svg?branch=2.0-release)](https://travis-ci.org/pavlovmedia/osgi-gelf) | [repository.xml](https://raw.githubusercontent.com/pavlovmedia/osgi-gelf/2.0-release/obr/repository.xml) |
 
 Latest Version
 --------------
