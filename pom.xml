@@ -42,7 +42,7 @@
 
   <distributionManagement>
     <repository>
-      <id>bintray-shawn-pavlov-media-oss-osgi-gelf</id>
+      <id>bintray-pavlovmedia-pavlov-media-oss</id>
       <name>shawn-pavlov-media-oss-osgi-gelf</name>
       <url>https://api.bintray.com/maven/pavlovmedia/pavlov-media-oss/osgi-gelf</url>
     </repository>
