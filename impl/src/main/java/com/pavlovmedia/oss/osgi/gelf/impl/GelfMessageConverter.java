@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Dictionary;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,6 +42,18 @@ public final class GelfMessageConverter {
     private static String _HOSTNAME;
     
     private GelfMessageConverter() { }
+    
+    /**
+     * Can set a hostname for this converter
+     * @param hostname
+     */
+    public static void setHostname(final String hostname) {
+        if (Objects.nonNull(hostname) && !hostname.trim().isEmpty()) {
+            _HOSTNAME = hostname.trim();
+        } else {
+            _HOSTNAME = null;
+        }
+    }
     
     /**
      * This method will determine the hostname and then cache it

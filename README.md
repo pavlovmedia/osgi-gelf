@@ -31,11 +31,4 @@ Getting off the ground is not hard if you have the following:
  * The Apache Declarative Services Bundle
  * The GELF Sink Mega module (from this project)
 
-Onc you have this running you just need to configure the GrayLog server, and enable logging. Once this is on, any logs written to the OSGi log will also be written to GrayLog
-
-Sample
--
-
-I will place a full walkthough on my blog http://shawnsrandom.blogspot.com/ in the very near future that will tie this all up in a nice bow.
-
-
+Once you have this running you just need to configure the GrayLog server, and enable logging. Once this is on, any logs written to the OSGi log will also be written to GrayLog
