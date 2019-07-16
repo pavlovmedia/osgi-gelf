@@ -41,7 +41,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_HOST, label="Host", description="Graylog2 Target Host"),
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_PORT, intValue=12201, label="Port", description="Graylog2 Port"),
     @Property(name=PavlovGelfTcpTransporter.GRAYLOG_LOG_CONSOLE, boolValue=false, label="Console Messages", description="Log messages to the console"),
-    @Property(name=PavlovGelfTcpTransporter.GRAYLOG_ADD_FIELDS, value="", unbounded = PropertyUnbounded.VECTOR, label = "Additional Fields", description = "Additional fields to add to the record in key:value pairs")
+    @Property(name=PavlovGelfTcpTransporter.GRAYLOG_ADD_FIELDS, value="", unbounded=PropertyUnbounded.VECTOR, label = "Additional Fields", description = "Additional fields to add to the record in key:value pairs")
 })
 public class PavlovGelfTcpTransporter implements IGelfTransporter {
     static final String GRAYLOG_ACTIVE="graylog.active";
@@ -64,7 +64,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     
     @Override
     public void logGelfMessage(final GelfMessage message) {
-        logGelfMessage(message, (e) -> { 
+        logGelfMessage(message, e -> { 
             System.err.println("Failed to serialize message: "+message+" "+e.getMessage()); 
             e.printStackTrace();
             });
@@ -99,7 +99,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
                         }
                     }
                 });
-            });            
+            });
         }
     }
     

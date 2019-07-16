@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Properties;
@@ -46,13 +45,15 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
  * @author Shawn Dempsay
  *
  */
-@Component(metatype=true, policy=ConfigurationPolicy.REQUIRE, immediate=true)
+@Component(metatype=true, immediate=true)
 @Service(value = LogListener.class)
 @Properties({
-    @Property(name=GelfLogSink.TRACE_ENABLE, boolValue=false, label="Trace Enable", description="Log messages with unknown levels as debug")
+    @Property(name=GelfLogSink.TRACE_ENABLE, boolValue=false, label="Trace Enable", description="Log messages with unknown levels as debug"),
+    @Property(name=GelfLogSink.GELF_HOSTNAME, label="Hostname to log", description="If non-empty, this will be used as the hostname in logging messages")
 })
 public class GelfLogSink implements LogListener {
     static final String TRACE_ENABLE = "graylog.trace.enable";
+    static final String GELF_HOSTNAME = "graylog.hostname";
     
     @Reference
     LogReaderService readerService;
@@ -65,12 +66,16 @@ public class GelfLogSink implements LogListener {
     @Activate
     protected void activate(final Map<String, Object> config) {
         traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
+        // The other side can handle null and empty strings
+        GelfMessageConverter.setHostname((String) config.get(GELF_HOSTNAME));
         readerService.addLogListener(this);
     }
     
     @Modified
     protected void modified(final Map<String,Object> config) {
         traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
+        // The other side can handle null and empty strings
+        GelfMessageConverter.setHostname((String) config.get(GELF_HOSTNAME));
     }
  
     @Deactivate

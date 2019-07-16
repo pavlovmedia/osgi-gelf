@@ -32,24 +32,24 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  */
 public class GelfMessageSerializer extends JsonSerializer<GelfMessage> {
 
-	@Override
-	public void serialize(final GelfMessage value, final JsonGenerator jgen,
-			final SerializerProvider provider) throws IOException,
-			JsonProcessingException {
-		jgen.writeStartObject();
-		jgen.writeStringField("version", value.version);
-		jgen.writeStringField("host", value.host);
-		jgen.writeStringField("short_message", value.short_message);
-		jgen.writeStringField("full_message", value.full_message);
-		
-		BigDecimal bd = new BigDecimal(value.timestamp);
-		bd = bd.divide(new BigDecimal(1000), BigDecimal.ROUND_DOWN);
-		jgen.writeNumberField("timestamp", bd);
-		jgen.writeNumberField("level", value.level);
-		for (String key : value.additionalFields.keySet()) {
-			jgen.writeStringField("_"+key, value.additionalFields.get(key));
-		}
-		jgen.writeEndObject();
-	}
+    @Override
+    public void serialize(final GelfMessage value, final JsonGenerator jgen,
+            final SerializerProvider provider) throws IOException,
+            JsonProcessingException {
+        jgen.writeStartObject();
+        jgen.writeStringField("version", value.version);
+        jgen.writeStringField("host", value.host);
+        jgen.writeStringField("short_message", value.short_message);
+        jgen.writeStringField("full_message", value.full_message);
+        
+        BigDecimal bd = new BigDecimal(value.timestamp);
+        bd = bd.divide(new BigDecimal(1000), BigDecimal.ROUND_DOWN);
+        jgen.writeNumberField("timestamp", bd);
+        jgen.writeNumberField("level", value.level);
+        for (String key : value.additionalFields.keySet()) {
+            jgen.writeStringField("_"+key, value.additionalFields.get(key));
+        }
+        jgen.writeEndObject();
+    }
 
 }
