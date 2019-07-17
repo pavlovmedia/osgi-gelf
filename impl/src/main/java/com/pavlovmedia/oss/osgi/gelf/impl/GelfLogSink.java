@@ -49,11 +49,14 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
 @Service(value = LogListener.class)
 @Properties({
     @Property(name=GelfLogSink.TRACE_ENABLE, boolValue=false, label="Trace Enable", description="Log messages with unknown levels as debug"),
-    @Property(name=GelfLogSink.GELF_HOSTNAME, label="Hostname to log", description="If non-empty, this will be used as the hostname in logging messages")
+    @Property(name=GelfLogSink.GELF_HOSTNAME, label="Hostname to log", description="If non-empty, this will be used as the hostname in logging messages"),
+    @Property(name=GelfLogSink.SYSLOG_LEVELS, label="Use syslog levels", boolValue=false,
+        description="Syslog error levels are inverted from what we were using for GELF, use these if your graylog needs to merge with syslog messages")
 })
 public class GelfLogSink implements LogListener {
     static final String TRACE_ENABLE = "graylog.trace.enable";
     static final String GELF_HOSTNAME = "graylog.hostname";
+    static final String SYSLOG_LEVELS = "useSyslogLevels";
     
     @Reference
     LogReaderService readerService;
@@ -65,19 +68,23 @@ public class GelfLogSink implements LogListener {
     
     @Activate
     protected void activate(final Map<String, Object> config) {
-        traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
-        // The other side can handle null and empty strings
-        GelfMessageConverter.setHostname((String) config.get(GELF_HOSTNAME));
+        configure(config);
         readerService.addLogListener(this);
     }
     
     @Modified
     protected void modified(final Map<String,Object> config) {
+        configure(config);
+    }
+ 
+    protected void configure(final Map<String,Object> config) {
         traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
         // The other side can handle null and empty strings
         GelfMessageConverter.setHostname((String) config.get(GELF_HOSTNAME));
+        GelfMessageConverter.setSyslogLevels(
+                IronValueHelper.getBoolean(config.get(SYSLOG_LEVELS)));
     }
- 
+    
     @Deactivate
     protected void deactivate() {
         readerService.removeLogListener(this);

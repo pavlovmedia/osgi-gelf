@@ -40,6 +40,7 @@ import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
 public final class GelfMessageConverter {
     private static int MAX_LEVEL = 3;
     private static String _HOSTNAME;
+    private static boolean SYSLOG_LEVELS;
     
     private GelfMessageConverter() { }
     
@@ -72,6 +73,10 @@ public final class GelfMessageConverter {
         return _HOSTNAME;
     }
     
+    public static void setSyslogLevels(final boolean syslogLevels) {
+        SYSLOG_LEVELS = syslogLevels;
+    }
+    
     /**
      * Takes an OSGi LogEntry and converts it into a GelfMessage
      * This will convert over all the common things and then add
@@ -87,7 +92,7 @@ public final class GelfMessageConverter {
         message.timestamp = entry.getTime();
         message.level = gelfLevelFromOsgiLevel(entry.getLevel(), traceOn);
         
-        if (message.level > MAX_LEVEL) {
+        if (!SYSLOG_LEVELS && message.level > MAX_LEVEL) {
             return Optional.empty();
         }
         
@@ -123,21 +128,35 @@ public final class GelfMessageConverter {
      * @return The matching GELF log level
      */
     public static int gelfLevelFromOsgiLevel(final int osgiLevel, final AtomicBoolean traceOn) {
-        switch (osgiLevel) {
-        case LogService.LOG_DEBUG:
-            return 0;
-        case LogService.LOG_INFO:
-            return 1;
-        case LogService.LOG_WARNING:
-            return 2;
-        case LogService.LOG_ERROR:
-            return 3;
-        default:
-            if (traceOn.get()) {
-                // If trace is on, we return back this message as debug
-                return 0;
+        if (SYSLOG_LEVELS) {
+            switch (osgiLevel) {
+                case LogService.LOG_ERROR:
+                    return 1;
+                case LogService.LOG_WARNING:
+                    return 4;
+                case LogService.LOG_INFO:
+                    return 6;
+                case LogService.LOG_DEBUG:
+                default:
+                    return 7;
             }
-            return MAX_LEVEL + 1; // This number is greater than MAX_LEVEL so will be ignored
+        } else {
+            switch (osgiLevel) {
+                case LogService.LOG_DEBUG:
+                    return 0;
+                case LogService.LOG_INFO:
+                    return 1;
+                case LogService.LOG_WARNING:
+                    return 2;
+                case LogService.LOG_ERROR:
+                    return 3;
+                default:
+                    if (traceOn.get()) {
+                        // If trace is on, we return back this message as debug
+                        return 0;
+                    }
+                    return MAX_LEVEL + 1; // This number is greater than MAX_LEVEL so will be ignored
+            }
         }
     }
 }
