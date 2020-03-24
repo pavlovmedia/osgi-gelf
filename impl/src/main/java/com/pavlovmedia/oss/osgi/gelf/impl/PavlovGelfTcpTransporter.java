@@ -259,7 +259,7 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     private void terminateThreading() {
         gelfMessageProcessingActive.set(false);
 
-        if (!Objects.isNull(processGelfMessageFuture)) {
+        if (Objects.nonNull(processGelfMessageFuture)) {
             processGelfMessageFuture.cancel(true);
         }
 
