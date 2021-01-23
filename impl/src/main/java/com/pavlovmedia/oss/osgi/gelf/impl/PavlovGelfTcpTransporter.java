@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +71,12 @@ import com.pavlovmedia.oss.osgi.gelf.lib.IGelfTransporter;
             name = PavlovGelfTcpTransporter.GRAYLOG_THREAD_POOL_SIZE,
             intValue = PavlovGelfTcpTransporter.GRAYLOG_THREAD_POOL_SIZE_DEFAULT,
             label = "thread Pool size",
-            description = "message processing thread pool size (minimum 10)") })
+            description = "message processing thread pool size (minimum 10)"),
+        @Property(
+                name=PavlovGelfTcpTransporter.GRAYLOG_HOSTNAME, 
+                label="Source hostname", 
+                description="If non-empty, this will be used as the hostname in logging messages")
+        })
 public class PavlovGelfTcpTransporter implements IGelfTransporter {
     static final String GRAYLOG_ACTIVE = "graylog.active";
     static final String GRAYLOG_HOST = "graylog.host";
@@ -82,9 +88,13 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
 
     static final String GRAYLOG_THREAD_POOL_SIZE = "graylog.poolSize";
     static final int GRAYLOG_THREAD_POOL_SIZE_DEFAULT = 10;
+    
+    static final String GRAYLOG_HOSTNAME = "source.hostname";
 
     static final int GRAYLOG_SLEEP_DEFAULT_IN_MILLIS = 1000;
 
+    private static String _HOSTNAME;
+    
     private final ObjectMapper mapper = new ObjectMapper();
 
     private AtomicBoolean active = new AtomicBoolean(false);
@@ -103,7 +113,40 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
     private LinkedBlockingQueue<GelfMessage> gelfMessageQueue = new LinkedBlockingQueue<>();
     private AtomicBoolean gelfMessageProcessingActive = new AtomicBoolean(false);
 
+    /**
+     * Can set a hostname for this sink
+     * @param hostname
+     */
+    public static void setHostname(final String hostname) {
+        if (Objects.nonNull(hostname) && !hostname.trim().isEmpty()) {
+            _HOSTNAME = hostname.trim();
+        } else {
+            _HOSTNAME = null;
+        }
+    }
+    
+    /**
+     * This method will determine the hostname and then cache it
+     * for future use.
+     * @return the hostname of the system
+     */
+    public static String getHostname() {
+        if (null == _HOSTNAME) {
+            try {
+                _HOSTNAME = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                System.err.println("Failed to find hostname "+e.getMessage());
+                _HOSTNAME = "Unknown";
+            }
+        }
+        return _HOSTNAME;
+    }
 
+    @Override
+    public void setLoggedAsHostname(String hostname) {
+        setHostname(hostname);
+    }
+    
     @Activate
     protected void activate(final Map<String, Object> config) {
         IronValueHelper helper = new IronValueHelper(config);
@@ -178,6 +221,8 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
                 hostname = oHostName.get();
                 port = helper.getInteger(GRAYLOG_PORT).orElse(GRAYLOG_PORT_DEFAULT);
             }
+            
+            helper.getString(GRAYLOG_HOSTNAME).ifPresent(PavlovGelfTcpTransporter::setHostname);
         }
     }
 
@@ -281,6 +326,10 @@ public class PavlovGelfTcpTransporter implements IGelfTransporter {
             return; // We aren't running
         }
 
+        // Set the hostname as a last resort if we didn't get one passed in
+        if (Objects.isNull(message.host) || message.host.trim().isEmpty()) {
+            message.host = getHostname();
+        }
 
         // Add the event to the queue
         if (!gelfMessageQueue.offer(message)) {

@@ -9,6 +9,8 @@ import java.util.function.Consumer;
  *
  */
 public interface IGelfTransporter {
+    void setLoggedAsHostname(String hostname);
+    
     void logGelfMessage(GelfMessage message, Consumer<IOException> onException);
     
     void logGelfMessage(GelfMessage message);
