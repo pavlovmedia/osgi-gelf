@@ -80,7 +80,7 @@ public class GelfLogSink implements LogListener {
     protected void configure(final Map<String,Object> config) {
         traceOn.set(IronValueHelper.getBoolean(config.get(TRACE_ENABLE)));
         // The other side can handle null and empty strings
-        GelfMessageConverter.setHostname((String) config.get(GELF_HOSTNAME));
+        gelfServer.setLoggedAsHostname((String) config.get(GELF_HOSTNAME));
         GelfMessageConverter.setSyslogLevels(
                 IronValueHelper.getBoolean(config.get(SYSLOG_LEVELS)));
     }
