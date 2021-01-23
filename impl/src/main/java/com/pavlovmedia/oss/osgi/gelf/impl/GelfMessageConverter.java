@@ -18,10 +18,7 @@ package com.pavlovmedia.oss.osgi.gelf.impl;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Dictionary;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,39 +36,11 @@ import com.pavlovmedia.oss.osgi.gelf.lib.GelfMessage;
  */
 public final class GelfMessageConverter {
     private static int MAX_LEVEL = 3;
-    private static String _HOSTNAME;
     private static boolean SYSLOG_LEVELS;
     
     private GelfMessageConverter() { }
     
-    /**
-     * Can set a hostname for this converter
-     * @param hostname
-     */
-    public static void setHostname(final String hostname) {
-        if (Objects.nonNull(hostname) && !hostname.trim().isEmpty()) {
-            _HOSTNAME = hostname.trim();
-        } else {
-            _HOSTNAME = null;
-        }
-    }
-    
-    /**
-     * This method will determine the hostname and then cache it
-     * for future use.
-     * @return the hostname of the system
-     */
-    public static String getHostname() {
-        if (null == _HOSTNAME) {
-            try {
-                _HOSTNAME = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                System.err.println("Failed to find hostname "+e.getMessage());
-                _HOSTNAME = "Unknown";
-            }
-        }
-        return _HOSTNAME;
-    }
+
     
     public static void setSyslogLevels(final boolean syslogLevels) {
         SYSLOG_LEVELS = syslogLevels;
@@ -86,7 +55,6 @@ public final class GelfMessageConverter {
      */
     public static Optional<GelfMessage> fromOsgiMessage(final LogEntry entry, final AtomicBoolean traceOn) {
         GelfMessage message = new GelfMessage();
-        message.host = getHostname();
         message.short_message = entry.getMessage();
         message.full_message = entry.getMessage();
         message.timestamp = entry.getTime();
