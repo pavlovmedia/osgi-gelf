@@ -43,7 +43,7 @@ public class GelfMessageSerializer extends JsonSerializer<GelfMessage> {
         jgen.writeStringField("full_message", value.full_message);
         
         BigDecimal bd = new BigDecimal(value.timestamp);
-        bd = bd.divide(new BigDecimal(1000), BigDecimal.ROUND_DOWN);
+        bd = bd.divide(new BigDecimal(1000), 4, BigDecimal.ROUND_DOWN);
         jgen.writeNumberField("timestamp", bd);
         jgen.writeNumberField("level", value.level);
         for (String key : value.additionalFields.keySet()) {
