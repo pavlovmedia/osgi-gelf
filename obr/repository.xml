@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
-<repository lastmodified="20210123034527.084">
-   <resource id="5010be95-e6d3-49bb-bb9a-59a13372ae97" symbolicname="com.pavlovmedia.oss.osgi.gelf.impl" version="2.0.15" presentationname="GELF Logging target implementation" uri="https://dl.bintray.com/pavlovmedia/pavlov-media-oss/com/pavlovmedia/oss/osgi/gelf/com.pavlovmedia.oss.osgi.gelf.impl/2.0.15/com.pavlovmedia.oss.osgi.gelf.impl-2.0.15.jar">
+<repository lastmodified="20210311060728.282">
+   <resource id="4d8859d1-9af5-43f3-a01b-b8af4af6dd3e" symbolicname="com.pavlovmedia.oss.osgi.gelf.impl" version="2.0.16" presentationname="GELF Logging target implementation" uri="https://dl.bintray.com/pavlovmedia/pavlov-media-oss/com/pavlovmedia/oss/osgi/gelf/com.pavlovmedia.oss.osgi.gelf.impl/2.0.16/com.pavlovmedia.oss.osgi.gelf.impl-2.0.16.jar">
       <description>Implementation bundle</description>
-      <size>24388</size>
+      <size>24390</size>
       <license>http://www.apache.org/licenses/LICENSE-2.0.txt</license>
       <capability name="bundle">
          <p n="symbolicname" v="com.pavlovmedia.oss.osgi.gelf.impl"/>
          <p n="presentationname" v="GELF Logging target implementation"/>
-         <p n="version" t="version" v="2.0.15"/>
+         <p n="version" t="version" v="2.0.16"/>
          <p n="manifestversion" v="2"/>
       </capability>
       <require name="package" filter="(&amp;(package=com.fasterxml.jackson.databind)(&amp;(version&gt;=2.3.0)(!(version&gt;=3.0.0))))" extend="false" multiple="false" optional="false">Import package com.fasterxml.jackson.databind</require>
@@ -15,19 +15,19 @@
       <require name="package" filter="(&amp;(package=org.osgi.framework)(&amp;(version&gt;=1.4.0)(!(version&gt;=2.0.0))))" extend="false" multiple="false" optional="false">Import package org.osgi.framework</require>
       <require name="package" filter="(&amp;(package=org.osgi.service.log)(&amp;(version&gt;=1.3.0)(!(version&gt;=2.0.0))))" extend="false" multiple="false" optional="false">Import package org.osgi.service.log</require>
    </resource>
-   <resource id="23dcfe8d-27eb-4930-a44c-57458d6b057c" symbolicname="com.pavlovmedia.oss.osgi.gelf.lib" version="2.0.15" presentationname="GELF Logging Library" uri="https://dl.bintray.com/pavlovmedia/pavlov-media-oss/com/pavlovmedia/oss/osgi/gelf/com.pavlovmedia.oss.osgi.gelf.lib/2.0.15/com.pavlovmedia.oss.osgi.gelf.lib-2.0.15.jar">
+   <resource id="68830eb0-b7f7-4481-98e0-89b828ce37cf" symbolicname="com.pavlovmedia.oss.osgi.gelf.lib" version="2.0.16" presentationname="GELF Logging Library" uri="https://dl.bintray.com/pavlovmedia/pavlov-media-oss/com/pavlovmedia/oss/osgi/gelf/com.pavlovmedia.oss.osgi.gelf.lib/2.0.16/com.pavlovmedia.oss.osgi.gelf.lib-2.0.16.jar">
       <description>Library to create and send GELF messages</description>
-      <size>5861</size>
+      <size>5863</size>
       <license>http://www.apache.org/licenses/LICENSE-2.0.txt</license>
       <capability name="bundle">
          <p n="symbolicname" v="com.pavlovmedia.oss.osgi.gelf.lib"/>
          <p n="presentationname" v="GELF Logging Library"/>
-         <p n="version" t="version" v="2.0.15"/>
+         <p n="version" t="version" v="2.0.16"/>
          <p n="manifestversion" v="2"/>
       </capability>
       <capability name="package">
          <p n="package" v="com.pavlovmedia.oss.osgi.gelf.lib"/>
-         <p n="version" t="version" v="2.0.15"/>
+         <p n="version" t="version" v="2.0.16"/>
          <p n="uses:" v="com.fasterxml.jackson.core,com.fasterxml.jackson.databind,com.fasterxml.jackson.databind.annotation"/>
       </capability>
       <require name="package" filter="(&amp;(package=com.fasterxml.jackson.core)(&amp;(version&gt;=2.3.0)(!(version&gt;=3.0.0))))" extend="false" multiple="false" optional="false">Import package com.fasterxml.jackson.core</require>
